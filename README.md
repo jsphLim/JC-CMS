@@ -5,6 +5,7 @@
 2. Apache Tomcat 8.5.16
 3. 服务端基于 Spring + SrpingMVC + Hibernate
 4. 客户端基于 Jquery + Bootstrap
+5. 数据库 MySQL 5.7.18
 
 ## 功能说明
 1. 登录 (123456 123456)
@@ -24,8 +25,8 @@ File -> new -> Module from Existing Sources... -> 选中pom.xml文件 -> 一直n
 3. 配置启动服务器 http://localhost:8080/admin/index.jsp
 
 ## 数据库相关
-1. 配置数据库
-sudo vim /etc/mysql/my.cnf (标签下没有的添加 有的修改)
+1. 配置数据库  
+sudo vim /etc/mysql/my.cnf (copy or edit)
 ```
 [mysqld]
 character_set_server=utf8
@@ -41,7 +42,7 @@ password=123456
 ```
 service mysql restart
 ```
-3. 配置 crond
+3. 配置 crond  
 sudo vim /etc/crontab (sudo chmod -x mysql_databak.sh)
 ```
 00 22 * * * root ./home/mysql_data/mysqldata_bak.sh # 表示每天22点00分执行备份
@@ -88,7 +89,7 @@ Article: [id ID, title 标题, author 作者, date 日期, content 简介, url �
 参数：id ID, image 封面
 响应：true false
 ```
-5. 删除最新资讯post
+5. 删除最新资讯 post
 ```
 参数：id ID
 响应：true false
