@@ -1,0 +1,113 @@
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:tx="http://www.springframework.org/schema/tx" xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+                        http://www.springframework.org/schema/beans/spring-beans.xsd
+                        http://www.springframework.org/schema/context
+						http://www.springframework.org/schema/context/spring-context.xsd
+          				http://www.springframework.org/schema/tx
+         				http://www.springframework.org/schema/tx/spring-tx.xsd
+         				http://www.springframework.org/schema/mvc
+         				http://www.springframework.org/schema/mvc/spring-mvc.xsd">
+
+    <!-- scan the package and the sub package -->
+    <context:component-scan base-package="com.redhat.admin"/>
+
+    <!-- don't handle the static resource -->
+    <mvc:default-servlet-handler/>
+    <mvc:resources mapping="/js/**" location="/static/js/"/>
+    <mvc:resources mapping="/css/**" location="/static/css/"/>
+    <mvc:resources mapping="/images/**" location="/static/images/"/>
+    <mvc:resources mapping="/fonts/**" location="/static/fonts/"/>
+
+    <!-- 配置驱动 -->
+    <mvc:annotation-driven>
+        <mvc:message-converters>
+            <bean class="org.springframework.http.converter.StringHttpMessageConverter">
+                <property name="supportedMediaTypes">
+                    <list>
+                        <value>text/plain;charset=UTF-8</value>
+                        <value>text/html;charset=UTF-8</value>
+                        <value>application/json;charset=UTF-8</value>
+                    </list>
+                </property>
+            </bean>
+        </mvc:message-converters>
+    </mvc:annotation-driven>
+
+    <!-- 配置视图 -->
+    <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver" id="internalResourceViewResolver">
+        <!-- 前缀 -->
+        <property name="prefix" value="/WEB-INF/jsp/"/>
+        <!-- 后缀 -->
+        <property name="suffix" value=".jsp"/>
+    </bean>
+
+    <!-- 配置拦截器 -->
+    <mvc:interceptors>
+        <mvc:interceptor>
+            <mvc:mapping path="/user/**"/>
+            <mvc:mapping path="/article/**"/>
+            <bean class="com.redhat.admin.interceptor.LoginInterceptor"></bean>
+        </mvc:interceptor>
+    </mvc:interceptors>
+
+    <!-- 配置注解 -->
+    <context:annotation-config/>
+
+    <!-- 读取数据 -->
+    <context:property-placeholder location="classpath:jdbc.properties"/>
+
+    <!-- dataSource -->
+    <bean id="dataSource" destroy-method="close"
+          class="org.apache.commons.dbcp2.BasicDataSource">
+        <!-- 数据库地址 -->
+        <property name="url" value="${jdbc.url}"/>
+        <!-- 数据库账号 -->
+        <property name="username" value="${jdbc.username}"/>
+        <!-- 数据库密码 -->
+        <property name="password" value="${jdbc.password}"/>
+        <!-- 数据库驱动 -->
+        <property name="driverClassName" value="${jdbc.driverClassName}"/>
+        <!-- 最大连接数 -->
+        <property name="maxTotal" value="${jdbc.maxTotal}"/>
+        <!-- 最大空闲连接数 -->
+        <property name="maxIdle" value="${jdbc.maxIdle}"/>
+        <!-- 最小空闲连接数 -->
+        <property name="minIdle" value="${jdbc.minIdle}"/>
+    </bean>
+
+    <!-- 配置事务工厂 -->
+    <bean id="sessionFactory"
+          class="org.springframework.orm.hibernate5.LocalSessionFactoryBean">
+        <!-- dataSource -->
+        <property name="dataSource" ref="dataSource"/>
+        <!-- hibernateProperties -->
+        <property name="hibernateProperties">
+            <props>
+                <prop key="hibernate.hbm2ddl.auto">${hibernate.hbm2ddl.auto}
+                </prop>
+                <prop key="hibernate.dialect">${hibernate.dialect}
+                </prop>
+                <prop key="hibernate.show_sql">${hibernate.show_sql}</prop>
+                <prop key="hibernate.format_sql">${hibernate.format_sql}</prop>
+            </props>
+        </property>
+        <!-- 自动扫描注解方式配置的hibernate类文件 -->
+        <property name="packagesToScan">
+            <list>
+                <value>com.redhat.admin.bean</value>
+            </list>
+        </property>
+    </bean>
+
+    <!-- 配置事务管理 -->
+    <bean id="transactionManager"
+          class="org.springframework.orm.hibernate5.HibernateTransactionManager">
+        <property name="sessionFactory" ref="sessionFactory"></property>
+    </bean>
+
+    <!-- 配置事务注解 -->
+    <tx:annotation-driven transaction-manager="transactionManager"/>
+</beans>
